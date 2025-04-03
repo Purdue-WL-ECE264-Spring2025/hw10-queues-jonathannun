@@ -18,6 +18,13 @@ clean:
 test1: hw10
 	./hw10 testcases/1.txt > out1.txt
 
+test2: hw10
+	./hw10 testcases/2.txt > out2.txt
+
+test3: hw10
+	./hw10 testcases/3.txt > out3.txt
+
+
 #Test memory leak
 leak: hw10
-	valgrind ./hw10 testcases/1.txt > leakout1.txt
+	valgrind ./hw10 testcases/3.txt > leakout1.txt
