@@ -33,6 +33,33 @@ int main(int argc, char **argv) {
   }
   fclose(fp);
 
+  //--------------DEBUGGING AREA
+  //Initializing tester list
+  struct linked_list * tester_list = malloc(sizeof(struct linked_list));
+  tester_list -> head = NULL;
+  //Adding nodes
+  insert_at_tail(tester_list, 1);
+  insert_at_tail(tester_list, 2);
+  insert_at_tail(tester_list, 3);
+  insert_at_tail(tester_list, 4);
+  //Printing result
+  dump_list(stderr,*tester_list);
+  //Removing nodes
+  remove_from_tail(tester_list);
+  dump_list(stderr,*tester_list);
+  remove_from_tail(tester_list);
+  dump_list(stderr,*tester_list);
+  remove_from_tail(tester_list);
+  dump_list(stderr,*tester_list);
+  remove_from_tail(tester_list);
+  //Printing remaining list
+  dump_list(stderr,*tester_list);
+  //Freeing list
+  free_list(*tester_list);
+  free(tester_list);
+
+  //--------------END OF DEBUGGING AREA
+
   int output = number_of_moves(start);
   if (output != expected) {
     fprintf(stderr, "Expected %d moves, got %d\n", expected, output);

@@ -14,3 +14,10 @@ clean:
 
 %.o: %.c $(HEADERS)
 	$(CC) -c $< -o $@ $(CFLAGS)
+
+test1: hw10
+	./hw10 testcases/1.txt > out1.txt
+
+#Test memory leak
+leak: hw10
+	valgrind ./hw10 testcases/1.txt > leakout1.txt
