@@ -26,20 +26,33 @@ void print_game_state(struct game_state state) {
     fprintf(stderr,"num_steps: %d\n",state.num_steps);
 }
 
-/*
-struct game_state copy_state(struct game_state state) {
-    struct game_state copy;
-    copy.num_steps = state.num_steps;
-    for (uint8_t i = 0; i < 4; i++) {
-        for (uint8_t j = 0; j < 4; j++) {
-            copy.tiles[i][j] = state.tiles[i][j];
-        }
-    }
-    copy.empty_col = state.empty_col;
-    copy.empty_row = state.empty_row;
-    return copy;
+void add_to_visited(struct linked_list *visited, struct game_state curr) {
+    int steps = curr.num_steps;
+    curr.num_steps = 0;
+    size_t serial = (size_t) serialize(curr);
+    insert_at_head(visited, serial);
+    curr.num_steps = steps;
 }
-*/
+
+struct list_node *list_search(struct linked_list *list, size_t v) {
+    struct list_node * p = list->head;
+    while (p != NULL)
+    {
+      if ((p->value) == v) return p;
+      p = p->next;
+    }
+    return p;
+}
+
+bool in_visited(struct linked_list *visited, struct game_state state) {
+    int steps = state.num_steps;
+    state.num_steps = 0;
+    size_t serial = (size_t) serialize(state);
+    state.num_steps = steps;
+    if(list_search(visited, serial) != NULL) return true;
+    return false;
+}
+
 
 int final_state(struct game_state state) {
     if (state.empty_col != 3 || state.empty_row != 3) return false;
@@ -53,7 +66,7 @@ int final_state(struct game_state state) {
 }
 
 int number_of_moves(struct game_state start) {
-    clock_t start_time = clock();
+    //clock_t start_time = clock();
     //Initializing queue
     struct linked_list * queue_list = malloc(sizeof(struct linked_list));
     queue_list -> head = NULL;
@@ -62,15 +75,17 @@ int number_of_moves(struct game_state start) {
     
     //Enquing first state
     enqueue(state_queue,start);
-
+    struct linked_list * visited_list = malloc(sizeof(struct linked_list));
+    visited_list -> head = NULL;
     //Running BFS - Assuming there is a solution, it will run forever if no solution exist
     int num_moves = -1;
     while (true)
     {
-        double seconds = (double) (clock()-start_time)/CLOCKS_PER_SEC;
-        if (seconds > 50) break;
+        //double seconds = (double) (clock()-start_time)/CLOCKS_PER_SEC;
+        //if (seconds > 50) break;
         //Popping current state
         struct game_state curr = dequeue(state_queue);
+        add_to_visited(visited_list,curr);
         uint64_t serial_curr = serialize(curr);
         //Testing if we have found the solution
         if (final_state(curr))
@@ -89,15 +104,17 @@ int number_of_moves(struct game_state start) {
         struct game_state right = deserialize(serial_curr);
         move_right(&right);
         //Queueing new states
-        if (serial_curr != serialize(up)) enqueue(state_queue,up);
-        if (serial_curr != serialize(down)) enqueue(state_queue,down);
-        if (serial_curr != serialize(left)) enqueue(state_queue,left);
-        if (serial_curr != serialize(right)) enqueue(state_queue,right);
+        if (serial_curr != serialize(up) && !in_visited(visited_list,up)) enqueue(state_queue,up);
+        if (serial_curr != serialize(down) && !in_visited(visited_list,down)) enqueue(state_queue,down);
+        if (serial_curr != serialize(left) && !in_visited(visited_list,left)) enqueue(state_queue,left);
+        if (serial_curr != serialize(right) && !in_visited(visited_list,right)) enqueue(state_queue,right);
     }
 
     //Freeing used structures
     free_list(state_queue->data); //Frees remaining nodes in queue after solution found
     free(queue_list);   //Frees the list structure (same as free(state_queue->data);)
     free(state_queue);  //Frees the queue structure
+    free_list(*visited_list);
+    free(visited_list);
     return num_moves;
 }
